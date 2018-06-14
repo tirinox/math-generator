@@ -1,1 +1,16 @@
-test: '10'
+zero: '0'
+
+digit:
+    0-9: 100%
+
+digit_1_9:
+    1-9: 100%
+
+integer2:
+    $digit_1_9 $digit: 45%
+    $digit: auto
+
+integer3:
+    $digit_1_9 $digit $digit: 30%
+    $digit_1_9 $digit: auto
+    $digit: auto

@@ -10,7 +10,6 @@ class ReaderException(Exception):
 
 class TemplateReader:
     ClassRef = namedtuple('ClassRef', ['class_name'])
-    TextNode = namedtuple('TextNode', ['content'])
     Expression = namedtuple('Expression', ['tokens'])
     ProbClass = namedtuple('ProbClass', ['variations'])
     Variation = namedtuple('Variation', ['content', 'probability'])
@@ -72,18 +71,25 @@ class TemplateReader:
             self.options[name] = value
 
     def _parse_var_string(self, var_string: str):
-        return [self.TextNode(var_string)]
+        return [var_string]
 
     def _parse_simple_expression(self, value: str):
         tokens = []
         items = value.split(' ')
 
+        if value == '0-9':
+            return list(str(i) for i in range(10))
+
         for item in items:
             if self._is_class(item):
                 tokens.append(self.ClassRef(item[1:]))
             else:
-                tokens.append(self.TextNode(items))
-        return self.Expression(tokens)
+                tokens.append(item)
+
+        if len(tokens) == 1 and isinstance(tokens[0], str):
+            return tokens[0]
+        else:
+            return self.Expression(tokens)
 
     def _parse_probablistic_choice_class(self, variants_raw: dict):
         variations = []
@@ -92,16 +98,27 @@ class TemplateReader:
         left_probability = 100.0
         for variant_raw, probability in variants_raw.items():
             probability = str(probability).strip()
-            expression = self._parse_simple_expression(variant_raw)
+
+            result = self._parse_simple_expression(variant_raw)
+            many_results = isinstance(result, list)
 
             if probability.endswith('%'):
                 prob_number = float(probability[:-1])
                 left_probability -= prob_number
                 if left_probability < 0.0:
                     raise ReaderException('Total probability > 100% when parsing {}'.format(variants_raw))
-                variations.append(self.Variation(expression, prob_number))
+
+                if many_results:
+                    n = len(result)
+                    each_prod_number = prob_number / n
+                    variations += list(self.Variation(r, each_prod_number) for r in result)
+                else:
+                    variations.append(self.Variation(result, prob_number))
             elif probability == 'auto':
-                unknown_variations.append(self.Variation(expression, None))
+                if many_results:
+                    unknown_variations += list(self.Variation(r, None) for r in result)
+                else:
+                    unknown_variations.append(self.Variation(result, None))
             else:
                 raise ReaderException('Cant read probability (use ..% or ~): {}'.format(probability))
 
@@ -117,8 +134,10 @@ class TemplateReader:
             self.classes[name] = self._parse_simple_expression(value)
         elif isinstance(value, dict):
             self.classes[name] = self._parse_probablistic_choice_class(value)
+        elif isinstance(value, list):
+            self.classes[name] = self._parse_probablistic_choice_class({x:'auto' for x in value})
         else:
-            raise ReaderException('{}: class\'s values must be dict or str'.format(name))
+            raise ReaderException('{}: invalid class content'.format(name))
 
     def _parse(self):
         for k, v in self._dict_repr.items():

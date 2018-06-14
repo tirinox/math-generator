@@ -3,22 +3,9 @@
 
 ^seed: 100
 
-zero: '0'
-colon: ':'
-
-digit:
-    0-9: 100%
-
-digit_1_9:
-    1-9: 100%
-
-integer2:
-    $digit_1_9 $colon $digit: 45%
-    $digit: auto
-
-negative50:
-    '': 50%
-    '-': 50%
+negative:
+  - ''
+  - '+'
 
 plus: '+'
 minus: '-'
@@ -27,4 +14,6 @@ plus_or_minus:
     plus: 50%
     minus: auto
 
-simple_linear_equation: x $plus_or_minus $integer2 = $negative50 $integer2
+simple_linear_equation: 'x $plus_or_minus $integer2 = $negative50 $integer2'
+
+quad_equation: '$integer2 x ^ 2 $plus_or_minus $integer2 x $plus_or_minus $integer2 = 0'
