@@ -74,7 +74,7 @@ class TemplateReader:
         def syntax_error(extra=''):
             raise ReaderException('syntax error "{}" in {}'.format(extra, range_str))
 
-        if range_str == '!' or range_str == '-':
+        if range_str == '\\' or range_str == '-':
             return range_str
 
         result_chars = set()
@@ -94,7 +94,7 @@ class TemplateReader:
 
         while position < total_len:
             symbol = range_str[position]
-            if symbol == '!':
+            if symbol == '\\':
                 position, next_symbol = want_next(position)
                 result_chars.add(next_symbol)
             elif symbol == '-':
@@ -181,6 +181,18 @@ class TemplateReader:
                 self._parse_directive(k, v)
             else:
                 self._parse_class(k, v)
+        self._check_classes(self.classes)
+
+    def _check_classes(self, coll):
+        if isinstance(coll, self.ClassRef):
+            if coll.class_name not in self.classes:
+                raise ReaderException('undefined class {}'.format(coll.class_name))
+        elif isinstance(coll, dict):
+            for v in coll.values():
+                self._check_classes(v)
+        elif isinstance(coll, (list, tuple)):
+            for v in coll:
+                self._check_classes(v)
 
     def __repr__(self) -> str:
         return "TemplateReader:\nClasses = \n{}\nOpts = \n{}".format(
