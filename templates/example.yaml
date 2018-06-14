@@ -7,7 +7,11 @@ space: ' '
 
 negative:
   - ''
-  - '+'
+  - '-'
+
+rare_negative:
+  '-': 20%
+  '': auto
 
 plus_or_minus:
     - '+'
@@ -15,4 +19,6 @@ plus_or_minus:
 
 simple_linear_equation: 'x $plus_or_minus $integer2 = $negative $integer2'
 
-quad_equation: '$integer2 * x ^ 2 $plus_or_minus $integer2 * x $plus_or_minus $integer2 = 0'
+quad_equation:
+    - '$rare_negative $integer2 * x ^ 2 $plus_or_minus $integer2 * x $plus_or_minus $integer2 = 0'
+    - '$rare_negative $integer2 * x ^ 2 $plus_or_minus $integer2 * x = $negative $integer3'

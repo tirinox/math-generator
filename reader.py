@@ -109,6 +109,9 @@ class TemplateReader:
         return list(result_chars)
 
     def _parse_simple_expression(self, value: str, allow_ranges):
+        if value in (' ', ''):
+            return value
+
         tokens = []
         value = str(value).strip()
         items = value.split(' ')

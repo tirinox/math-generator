@@ -6,11 +6,15 @@ digit:
 digit_1_9:
     1-9: 100%
 
+integer1:
+    0: 5%
+    1-9: auto
+
 integer2:
     $digit_1_9 $digit: 45%
-    $digit: auto
+    $integer1: auto
 
 integer3:
     $digit_1_9 $digit $digit: 30%
     $digit_1_9 $digit: auto
-    $digit: auto
+    $integer1: auto
