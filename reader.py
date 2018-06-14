@@ -198,3 +198,10 @@ class TemplateReader:
         return "TemplateReader:\nClasses = \n{}\nOpts = \n{}".format(
             util.pretty_print_to_string(self.classes),
             util.pretty_print_to_string(self.options))
+
+    def print(self):
+        for class_name, class_data in self.classes.items():
+            print('-' * 50 + ' ' + class_name + ' ' + '-' * 50)
+            print(util.pretty_print_to_string(class_data))
+            print()
+

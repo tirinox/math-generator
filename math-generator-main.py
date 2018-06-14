@@ -1,13 +1,30 @@
 from reader import TemplateReader
-import util
-
+from evaluator import TemplateEvaluator
 
 r = TemplateReader('templates/example.yaml')
+# r.print()
 
-for class_name, class_data in r.classes.items():
-    print('-'*50 + ' ' + class_name + ' ' + '-'*50)
-    print(util.pretty_print_to_string(class_data))
-    print()
+print()
+print('-~'*100)
+print()
+
+from random import Random
+
+rng = Random()
+ev = TemplateEvaluator(r, rng)
+
+from collections import Counter
+
+xx = []
+
+for i in range(15):
+    c = 'quad_equation'
+    r = ev.eval_class(c)
+    # print(r)
+    print(''.join(r))
+    xx.append(r)
+
+# print(Counter(xx))
 
 
 # r = TemplateReader('templates/null.yaml')
