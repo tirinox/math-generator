@@ -7,12 +7,9 @@ negative:
   - ''
   - '+'
 
-plus: '+'
-minus: '-'
-
 plus_or_minus:
-    plus: 50%
-    minus: auto
+    - '+'
+    - '-'
 
 simple_linear_equation: 'x $plus_or_minus $integer2 = $negative50 $integer2'
 

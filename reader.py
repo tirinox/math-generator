@@ -36,7 +36,7 @@ class TemplateReader:
 
     @staticmethod
     def _is_class(s: str):
-        return s.startswith('$')
+        return s.startswith('$') and len(s) > 1
 
     @staticmethod
     def _is_directive(s: str):
@@ -70,26 +70,62 @@ class TemplateReader:
         else:
             self.options[name] = value
 
-    def _parse_var_string(self, var_string: str):
-        return [var_string]
+    def _parse_range(self, range_str: str):
+        def syntax_error(extra=''):
+            raise ReaderException('syntax error "{}" in {}'.format(extra, range_str))
 
-    def _parse_simple_expression(self, value: str):
+        if range_str == '!' or range_str == '-':
+            return range_str
+
+        result_chars = set()
+        position = 0
+        total_len = len(range_str)
+
+        def want_next(p):
+            p += 1
+            if p >= total_len:
+                syntax_error('unexpected end')
+            return p, range_str[p]
+
+        def want_prev(p):
+            if p <= 0:
+                syntax_error('no symbol before')
+            return range_str[p - 1]
+
+        while position < total_len:
+            symbol = range_str[position]
+            if symbol == '!':
+                position, next_symbol = want_next(position)
+                result_chars.add(next_symbol)
+            elif symbol == '-':
+                range_start = want_prev(position)
+                position, range_end = want_next(position)
+                for symbol_index in range(ord(range_start), ord(range_end) + 1):
+                    result_chars.add(chr(symbol_index))
+            else:
+                result_chars.add(symbol)
+            position += 1
+
+        return list(result_chars)
+
+    def _parse_simple_expression(self, value: str, allow_ranges):
         tokens = []
+        value = str(value).strip()
         items = value.split(' ')
 
-        if value == '0-9':
-            return list(str(i) for i in range(10))
-
-        for item in items:
-            if self._is_class(item):
-                tokens.append(self.ClassRef(item[1:]))
-            else:
-                tokens.append(item)
-
-        if len(tokens) == 1 and isinstance(tokens[0], str):
-            return tokens[0]
+        if allow_ranges and len(items) == 1 and not self._is_class(value):
+            return self._parse_range(value)
         else:
-            return self.Expression(tokens)
+            for item in items:
+                if self._is_class(item):
+                    tokens.append(self.ClassRef(item[1:]))
+                else:
+                    tokens.append(item)
+
+            if len(tokens) == 1 and isinstance(tokens[0], str):
+                return tokens[0]
+            else:
+                return self.Expression(tokens)
 
     def _parse_probablistic_choice_class(self, variants_raw: dict):
         variations = []
@@ -99,7 +135,7 @@ class TemplateReader:
         for variant_raw, probability in variants_raw.items():
             probability = str(probability).strip()
 
-            result = self._parse_simple_expression(variant_raw)
+            result = self._parse_simple_expression(variant_raw, allow_ranges=True)
             many_results = isinstance(result, list)
 
             if probability.endswith('%'):
@@ -131,7 +167,7 @@ class TemplateReader:
 
     def _parse_class(self, name, value):
         if isinstance(value, str):
-            self.classes[name] = self._parse_simple_expression(value)
+            self.classes[name] = self._parse_simple_expression(value, allow_ranges=False)
         elif isinstance(value, dict):
             self.classes[name] = self._parse_probablistic_choice_class(value)
         elif isinstance(value, list):
