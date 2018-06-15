@@ -14,11 +14,19 @@ rare_negative:
   '': auto
 
 plus_or_minus:
-    - '+'
-    - '-'
+  - '+'
+  - '-'
 
-simple_linear_equation: 'x $plus_or_minus $integer2 = $negative $integer2'
+simple_linear_equation: '$rare_negative $integer2 * x $plus_or_minus $integer2 = $negative $integer2'
+
+x2: '$rare_negative $integer2 * x ^ 2'
 
 quad_equation:
-    - '$rare_negative $integer2 * x ^ 2 $plus_or_minus $integer2 * x $plus_or_minus $integer2 = 0'
-    - '$rare_negative $integer2 * x ^ 2 $plus_or_minus $integer2 * x = $negative $integer3'
+  - '$x2 (+|-) $integer2 * x (+|-) $integer2 = 0'
+  - '$x2 (+|-) $integer2 * x = $rare_negative $integer3'
+
+eqs:
+  - $simple_linear_equation
+  - $quad_equation
+
+test: '10 (/|*|$plus_or_minus) 20'

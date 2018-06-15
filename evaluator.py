@@ -6,7 +6,7 @@ import util
 class TemplateEvaluator:
     def __init__(self, reader: TemplateReader, rng: random.Random = None):
         self._reader = reader
-        self._random = rng or random.Random(42)
+        self._random = rng or random.Random(reader.get_seed())
 
     def _eval(self, expr):
         if isinstance(expr, str):

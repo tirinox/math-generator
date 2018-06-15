@@ -18,7 +18,7 @@ from collections import Counter
 xx = []
 
 for i in range(15):
-    c = 'quad_equation'
+    c = 'test'
     r = ev.eval_class(c)
     # print(r)
     print(''.join(r))

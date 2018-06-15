@@ -31,6 +31,8 @@ class TemplateReader:
         self.classes = {}
         self.options = {}
 
+        self._cnt = 0
+
         if self._dict_repr:
             self._parse()
 
@@ -41,6 +43,14 @@ class TemplateReader:
     @staticmethod
     def _is_directive(s: str):
         return s.startswith('^')
+
+    @staticmethod
+    def _is_in_brackets(s: str):
+        return s.startswith('(') and s.endswith(')')
+
+    @staticmethod
+    def _clear_brackets(s: str):
+        return s[1:-1]
 
     def _search_for_include(self, original_file_name):
         if os.path.isfile(original_file_name):
@@ -108,6 +118,28 @@ class TemplateReader:
 
         return list(result_chars)
 
+    def _create_virtual_class_from_range(self, s: str):
+        self._cnt += 1
+        class_name = '__class_{}'.format(self._cnt)
+
+        range_variants = s.split('|')
+        n = len(range_variants)
+        if n == 0:
+            return None
+
+        def process_one(v):
+            if self._is_class(v):
+                return self.Expression([self.ClassRef(v[1:])])
+            else:
+                return v.strip()
+
+        prob = 100.0 / n
+        varitations = [self.Variation(process_one(v), prob) for v in range_variants]
+
+        self.classes[class_name] = self.ProbClass(varitations)
+
+        return class_name
+
     def _parse_simple_expression(self, value: str, allow_ranges):
         if value in (' ', ''):
             return value
@@ -122,6 +154,10 @@ class TemplateReader:
             for item in items:
                 if self._is_class(item):
                     tokens.append(self.ClassRef(item[1:]))
+                elif self._is_in_brackets(item):
+                    new_class_name = self._create_virtual_class_from_range(self._clear_brackets(item))
+                    if new_class_name:
+                        tokens.append(self.ClassRef(new_class_name))
                 else:
                     tokens.append(item)
 
@@ -207,4 +243,7 @@ class TemplateReader:
             print('-' * 50 + ' ' + class_name + ' ' + '-' * 50)
             print(util.pretty_print_to_string(class_data))
             print()
+
+    def get_seed(self):
+        return int(self.options.get('^seed'))
 
