@@ -3,7 +3,7 @@
 
 ^seed: 100
 
-space: ' '
+const space: ' '
 
 negative:
   - ''
@@ -17,16 +17,19 @@ plus_or_minus:
   - '+'
   - '-'
 
-simple_linear_equation: '$rare_negative $integer2 * x $plus_or_minus $integer2 = $negative $integer2'
+free_rad:
+  '': 10%
+  '(+|-) $integer2': auto
+
+simple_linear_equation: '$rare_negative $integer2 * x $free_rad = $negative $integer2'
 
 x2: '$rare_negative $integer2 * x ^ 2'
 
 quad_equation:
-  - '$x2 (+|-) $integer2 * x (+|-) $integer2 = 0'
+  - '$x2 (+|-) $integer2 * x $free_rad = 0'
   - '$x2 (+|-) $integer2 * x = $rare_negative $integer3'
 
 eqs:
   - $simple_linear_equation
   - $quad_equation
 
-test: '10 (/|*|$plus_or_minus) 20'

@@ -3,10 +3,9 @@ from evaluator import TemplateEvaluator
 
 r = TemplateReader('templates/example.yaml')
 # r.print()
-
-print()
-print('-~'*100)
-print()
+# print()
+# print('-~'*100)
+# print()
 
 from random import Random
 
@@ -17,12 +16,12 @@ from collections import Counter
 
 xx = []
 
-for i in range(15):
-    c = 'test'
-    r = ev.eval_class(c)
-    # print(r)
-    print(''.join(r))
-    xx.append(r)
+for c in ['eqs']:
+    for i in range(15):
+        r = ev.eval_class(c)
+        # print(r)
+        print(''.join(r))
+        xx.append(r)
 
 # print(Counter(xx))
 
